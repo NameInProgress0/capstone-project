@@ -17,7 +17,7 @@ function App({width, height, depth}) {
   }
 
   const scale = getScale(cartonDimensions);
- console.log((cartonDimensions * scale))
+ 
   return (
     <Wrapper>
       <Toolbar side="top">
@@ -62,6 +62,7 @@ const Toolbar = styled.section`
   }}
   position: relative;
 `
+
 const Board = styled.section`
   grid-area: 2/2/3/3;
   display: flex;
@@ -75,12 +76,12 @@ const CartonDimension = styled.p`
 ${props => {
   if (props.side === 'top'){
       return(
-        `width: 100%;
+        `
+        width: 100%;
         top:100%;
-        
         `
       )
-  }else {
+  } else {
     return (
       `
       width: 600%;
@@ -91,7 +92,6 @@ ${props => {
     )
   }
 }}
-
 
 margin: 0;
 position: absolute;
