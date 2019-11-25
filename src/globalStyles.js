@@ -1,0 +1,22 @@
+import React from 'react'
+import { createGlobalStyle } from 'styled-components'
+
+const GlobalStyle = createGlobalStyle`
+* {
+    box-sizing: border-box;
+}
+
+  body {
+    height: 100vh;
+    width:100vw;
+    margin: 0;
+
+    display: flex;
+    justify-content: center;
+    align-items: center;
+
+    .element:hover {
+        cursor: gab;
+    }
+`
+export default GlobalStyle
