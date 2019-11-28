@@ -4,8 +4,7 @@ import Carton from './Carton'
 
 function App({ width, height, depth }) {
   const [selectElement, setSelectElement] = useState('')
-  const [elementHeight, setElementHeight] = useState('')
-  const [elementWidth, setElementWidth] = useState('')
+  const [elementDimensions, setElementDimensions] = useState({})
 
   const pxCalc = {
     mmToPx: 3.779528,
@@ -22,27 +21,40 @@ function App({ width, height, depth }) {
   const scale = getScale(cartonDimensions)
   cartonDimensions.scale = scale
   useEffect(() => {
-    setElementWidth(cartonDimensions.width)
-    setElementHeight(cartonDimensions.height)
+    const { height, width } = cartonDimensions
+    setElementDimensions({ height, width })
   }, [])
 
   function updateElement(el) {
-    const { height, width } = el.getBoundingClientRect()
+    if (
+      selectElement.className &&
+      !selectElement.className.includes('Carton')
+    ) {
+      selectElement.children[4].hidden = true
+      selectElement.children[5].hidden = true
+    }
+
+    if (el.className && el.className.includes('Wrapper')) {
+      el.children[4].hidden = false
+      el.children[5].hidden = false
+    }
+
     setSelectElement(el)
-    setElementWidth(width / scale)
-    setElementHeight(height / scale)
+    const { width, height } = el.getBoundingClientRect()
+
+    setElementDimensions({ width: width / scale, height: height / scale })
   }
 
   return (
     <Wrapper>
       <Toolbar side="top">
         <CartonDimension side="top">
-          {(elementWidth * pxCalc.pxTocm).toFixed(2)} cm
+          {(elementDimensions.width * pxCalc.pxTocm).toFixed(2)} cm
         </CartonDimension>
       </Toolbar>
       <Toolbar side="left">
         <CartonDimension side="left">
-          {(elementHeight * pxCalc.pxTocm).toFixed(2)} cm
+          {(elementDimensions.height * pxCalc.pxTocm).toFixed(2)} cm
         </CartonDimension>
       </Toolbar>
       <Board>

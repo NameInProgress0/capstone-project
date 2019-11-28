@@ -1,19 +1,12 @@
 import React, { useState } from 'react'
 import styled from 'styled-components/macro'
-/**
- * TODO Delete
- */
-import pic from './picture.jpg'
 
 export default function CreateImageElement({
   file,
   cartonDimension,
-  setSelectElement,
-  setDragfunction,
-  onFocus = false
+  setSelectElement
 }) {
   const [startDragPosition, setStartDragPosition] = useState(null)
-  const [focus, setFocus] = useState(false)
   const warpperDimensions = {
     height: cartonDimension.height * 0.5,
     width: cartonDimension.width * 0.5,
@@ -38,29 +31,12 @@ export default function CreateImageElement({
     }
   }
   function move(event) {
-    // event.dataTransfer.setDragImage(<div />, 0, 0)
-
-    /*
-    console.log(
-      startDragPosition.el.y,
-      startDragPosition.el.top,
-      event.pageY - startDragPosition.y
-    )
-    */
     const positionY =
       startDragPosition.el.top +
       (event.pageY - startDragPosition.y) -
       startDragPosition.el.top +
       startDragPosition.el.height / 2
-    /* console.log('state', startDragPosition)
-    console.log(
-      'positionY',
-      event.pageY,
-      startDragPosition.y,
-      event.pageY - startDragPosition.y
-    )
-    console.log(startDragPosition.el.top, positionY)
-*/
+
     const positionX =
       startDragPosition.el.left +
       (event.pageX - startDragPosition.x - startDragPosition.el.width / 2)
@@ -71,10 +47,6 @@ export default function CreateImageElement({
     if (event.pageY > 0) {
       event.target.parentElement.style.top = positionY + 'px'
     }
-
-    //   startDragPosition.el.left + (event.pageX - startDragPosition.x) + 'px'
-    // event.target.parentElement.style.left =
-    //  event.pageX - event.target.parentElement.+ 'px'
   }
 
   function onDragStart(event) {
@@ -90,9 +62,9 @@ export default function CreateImageElement({
   }
   function rotate(event) {
     var center_x =
-      startDragPosition.el.left + event.target.parentElement.offsetWidth * 0.5
+      startDragPosition.el.left + event.target.parentElement.offsetWidth * 0.2
     var center_y =
-      startDragPosition.el.top + event.target.parentElement.offsetHeight * 0.5
+      startDragPosition.el.top + event.target.parentElement.offsetHeight * 0.1
     var mouse_x = event.pageX
     var mouse_y = event.pageY
     var radians = Math.atan2(mouse_x - center_x, mouse_y - center_y)
@@ -100,31 +72,15 @@ export default function CreateImageElement({
     if (event.pageX > 0)
       event.target.parentElement.style.transform = `rotate(${degree}deg)`
   }
-  function getFuntions() {
-    return (
-      <>
-        <Delete onClick={event => event.target.parentElement.remove()}>
-          X
-        </Delete>
-        <Rotate onDragStartCapture={onDragStart} onDrag={rotate} draggable>
-          &#9813;
-        </Rotate>
-      </>
-    )
-  }
+
   return (
     <Wrapper {...warpperDimensions}>
       <Image
-        //   onFocus={() => setFocus(true)}
-
         onClick={event => {
-          setFocus(true)
-          console.log(event.target.parentElement)
-          console.log(event.target.parentElement.children[4])
+          event.stopPropagation()
           setSelectElement(event.target.parentElement)
         }}
-        // src={URL.createObjectURL(file)}
-        src={pic}
+        src={URL.createObjectURL(file)}
         onDragStartCapture={onDragStart}
         onDragStart={event => {
           const empty = document.createElement('div')
@@ -151,7 +107,12 @@ export default function CreateImageElement({
         onDrag={event => resize(event, 'XY')}
         draggable
       />
-      {focus && getFuntions()}
+      <Delete onClick={event => event.target.parentElement.remove()} hidden>
+        X
+      </Delete>
+      <Rotate onDragStartCapture={onDragStart} onDrag={rotate} draggable hidden>
+        &#9813;
+      </Rotate>
     </Wrapper>
   )
 }

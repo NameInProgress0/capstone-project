@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react'
+import React, { useState } from 'react'
 import styled from 'styled-components/macro'
 import CreateImageElement from './CreateImageElement'
 
@@ -8,11 +8,9 @@ export default function Carton({
   selectElement
 }) {
   const [childs, setChilds] = useState([])
-  const [dragFunction, setDragfunction] = useState(false)
   const height = dimensions.height * dimensions.scale
   const width = dimensions.width * dimensions.scale
   function handleDrop(event) {
-    console.log(event)
     if (event.dataTransfer.files[0]) {
       setChilds([
         ...childs,
@@ -20,19 +18,11 @@ export default function Carton({
           key={Math.random()}
           file={event.dataTransfer.files[0]}
           cartonDimension={{ width: width, height: height }}
-          //     setDragfunction={setDragfunction}
           setSelectElement={setSelectElement}
+          selectElement={selectElement}
         />
       ])
       event.preventDefault()
-      /*
-      setChilds([
-        ...childs,
-        <CreateImageElement
-          file={event.dataTransfer.files[0]}
-          cartonDimensions="halllo"
-        />
-      ])*/
     }
   }
 
@@ -40,15 +30,21 @@ export default function Carton({
     <Cartons
       height={height}
       width={width}
+      onClick={event => {
+        setSelectElement(event.target)
+        event.stopPropagation()
+      }}
       onDrag={event => {
         event.preventDefault()
+      }}
+      onDragStart={event => {
         const empty = document.createElement('div')
         event.dataTransfer.setDragImage(empty, 0, 0)
-        //  event.dataTransfer.setData('text', '')
+        event.dataTransfer.setData('text', '')
       }}
-      //onDragStart={() => console.log('dragstart carton')}
-      onDragOver={event => event.preventDefault()}
-      //  onDragEnd={event => event.preventDefault()}
+      onDragOver={event => {
+        event.preventDefault()
+      }}
       onDrop={event => {
         event.preventDefault()
         event.stopPropagation()
