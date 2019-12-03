@@ -13,9 +13,9 @@ export default function(props) {
     )
   } else {
     element = (
-      <Div {...props} data-dragevent="move" draggable>
+      <Element {...props} data-dragevent="move" draggable>
         {props.text}
-      </Div>
+      </Element>
     )
   }
 
@@ -27,7 +27,7 @@ const Image = styled.img`
   width: 100%;
 `
 
-const Div = styled.div`
+const Element = styled.div`
   display: flex;
   justify-content: center;
   align-items: center;
