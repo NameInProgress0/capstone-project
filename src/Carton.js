@@ -1,63 +1,97 @@
-import React, { useState } from 'react'
+import React from 'react'
 import styled from 'styled-components/macro'
-import CreateImageElement from './CreateImageElement'
+import AddElement from './AddElement'
 
-export default function Carton({
+export default function({
   dimensions,
   setSelectElement,
-  selectElement
+  selectElement,
+  elements,
+  addElement,
+  setElements
 }) {
-  const [childs, setChilds] = useState([])
+  let dragEvent = false
+  let startPosition = {}
   const height = dimensions.height * dimensions.scale
   const width = dimensions.width * dimensions.scale
-  function handleDrop(event) {
-    if (event.dataTransfer.files[0]) {
-      setChilds([
-        ...childs,
-        <CreateImageElement
-          key={Math.random()}
-          file={event.dataTransfer.files[0]}
-          cartonDimension={{ width: width, height: height }}
-          setSelectElement={setSelectElement}
-          selectElement={selectElement}
-        />
-      ])
-      event.preventDefault()
-    }
+
+  function handleClick(event) {
+    setSelectElement(event.target)
+    event.stopPropagation()
   }
 
+  function onDragStart(event) {
+    dragEvent = {
+      el: event.target.parentElement,
+      function: event.target.getAttribute('data-dragevent')
+    }
+    startPosition = {
+      x: event.pageX,
+      y: event.pageY,
+      el: dragEvent.el.getBoundingClientRect(),
+      carton: dragEvent.el.parentElement.getBoundingClientRect()
+    }
+    const empty = document.createElement('div')
+    event.dataTransfer.setDragImage(empty, 0, 0)
+    event.dataTransfer.setData('text', '')
+  }
+
+  function handleDragOver(event) {
+    event.preventDefault()
+    event.stopPropagation()
+    if (dragEvent) handleDragFunctions(event, startPosition, dragEvent)
+  }
+  function handelDragEnd() {
+    dragEvent = false
+  }
+
+  function handleDeleteElement(key) {
+    const index = elements.findIndex(item => item.key === key)
+    setElements([...elements.slice(0, index), ...elements.slice(index + 1)])
+  }
+
+  function handleDrop(event) {
+    event.preventDefault()
+    event.stopPropagation()
+    if (!dragEvent) {
+      addElement({
+        key: Math.random(),
+        dataEl: 'Image',
+        el: event.dataTransfer.files[0]
+      })
+    }
+  }
   return (
-    <Cartons
+    <Carton
+      data-el="Carton"
       height={height}
       width={width}
-      onClick={event => {
-        setSelectElement(event.target)
-        event.stopPropagation()
-      }}
-      onDrag={event => {
-        event.preventDefault()
-      }}
-      onDragStart={event => {
-        const empty = document.createElement('div')
-        event.dataTransfer.setDragImage(empty, 0, 0)
-        event.dataTransfer.setData('text', '')
-      }}
-      onDragOver={event => {
-        event.preventDefault()
-      }}
-      onDrop={event => {
-        event.preventDefault()
-        event.stopPropagation()
-
-        handleDrop(event)
-      }}
+      onClick={handleClick}
+      onDragStart={onDragStart}
+      onDragOver={handleDragOver}
+      onDragEnd={handelDragEnd}
+      onDrop={handleDrop}
     >
-      {childs}
-    </Cartons>
+      {elements.map(item => (
+        <AddElement
+          key={item.key}
+          dataEl={item.dataEl}
+          el={item.el}
+          cartonDimension={{
+            width: item.width || width,
+            height: item.width || height
+          }}
+          setSelectElement={setSelectElement}
+          selectElement={selectElement}
+          handleDeleteElement={() => handleDeleteElement(item.key)}
+          text={item.text || ''}
+        />
+      ))}
+    </Carton>
   )
 }
 
-const Cartons = styled.section`
+const Carton = styled.section`
   height: ${props => props.height}px;
   width: ${props => props.width}px;
   max-height: 80%;
@@ -69,3 +103,42 @@ const Cartons = styled.section`
   border-style: solid;
   border-width: 1px;
 `
+
+function handleDragFunctions(event, startPosition, dragEvent) {
+  if (dragEvent.function === 'move') {
+    dragEvent.el.style.left =
+      event.pageX -
+      startPosition.x +
+      (startPosition.el.left - startPosition.carton.left) +
+      'px'
+    dragEvent.el.style.top =
+      event.pageY -
+      startPosition.y +
+      (startPosition.el.top - startPosition.carton.top) +
+      'px'
+  }
+  if (dragEvent.function === 'resizeX' || dragEvent.function === 'resizeXY') {
+    dragEvent.el.style.width =
+      startPosition.el.width + (event.pageX - startPosition.x) + 'px'
+  }
+  if (dragEvent.function === 'resizeY' || dragEvent.function === 'resizeXY') {
+    dragEvent.el.style.height =
+      startPosition.el.height + (event.pageY - startPosition.y) + 'px'
+    /**
+     * resize Font size
+     */
+    if (dragEvent.el.getAttribute('data-el') === 'Text') {
+      dragEvent.el.firstChild.style.fontSize =
+        dragEvent.el.getBoundingClientRect().height * 0.63 + 'px'
+      dragEvent.el.style.width = 'auto'
+      dragEvent.el.style.height = 'auto'
+    }
+  }
+  if (dragEvent.function === 'rotate') {
+    var center_x = startPosition.el.left + dragEvent.el.offsetWidth * 0.2
+    var center_y = startPosition.el.top + dragEvent.el.offsetHeight * 0.1
+    var radians = Math.atan2(event.pageX - center_x, event.pageY - center_y)
+    var degree = radians * (180 / Math.PI) * -1 + 90
+    dragEvent.el.style.transform = `rotate(${degree}deg)`
+  }
+}
