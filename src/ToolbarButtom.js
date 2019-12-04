@@ -1,6 +1,7 @@
 import React from 'react'
 import styled from 'styled-components/macro'
 import Toolbar from './ToolbarStyle'
+import MoveButton from './MoveElementButton'
 
 export default function({ selectElement, setSelectElement, addElement }) {
   function addTextElement() {
@@ -9,8 +10,24 @@ export default function({ selectElement, setSelectElement, addElement }) {
       dataEl: 'Text',
       text: 'Your Text Here',
       width: 'auto',
-      height: 'auto'
+      height: 'auto',
+      top: 30,
+      left: 50,
+      rotate: 0,
+      fontSize: 16,
+      selected: false
     })
+  }
+  function moveElement() {
+    if (
+      selectElement !== null &&
+      selectElement.getAttribute('data-el') !== 'Carton'
+    ) {
+      const elPos = selectElement.getBoundingClientRect()
+      const carPos = selectElement.parentElement.getBoundingClientRect()
+
+      selectElement.style.top = elPos.top - carPos.top + 1 + 'px'
+    }
   }
   function handleColor(event) {
     if (
@@ -68,6 +85,7 @@ export default function({ selectElement, setSelectElement, addElement }) {
           type="number"
           value={
             selectElement !== null &&
+            selectElement.getAttribute('data-el') === 'Text' &&
             Number(
               selectElement.firstChild.style.fontSize.replace('px', '')
             ) !== 0
@@ -79,6 +97,9 @@ export default function({ selectElement, setSelectElement, addElement }) {
           onChange={handleFontSize}
         />
       </Label>
+      <MoveButton side="Y" onClick={moveElement}>
+        &darr;
+      </MoveButton>
       <Label>
         <br />
         Rotate

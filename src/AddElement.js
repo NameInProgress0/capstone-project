@@ -1,6 +1,7 @@
 import React from 'react'
 import styled from 'styled-components/macro'
 import CreateElement from './CreateElement'
+import { is } from '@babel/types'
 
 export default function({
   el = false,
@@ -8,17 +9,17 @@ export default function({
   setSelectElement,
   text = false,
   dataEl,
-  handleDeleteElement
+  handleDeleteElement,
+  isSelected
 }) {
   const warpperDimensions = {
     height: cartonDimension.height * 0.5 || 'auto',
     width: cartonDimension.width * 0.5 || 'auto'
   }
-
+  console.log('add elemnt', isSelected)
   return (
     <Wrapper data-el={dataEl} {...warpperDimensions}>
       <CreateElement
-        onkeydown={event => console.log(event)}
         onClick={event => {
           event.stopPropagation()
           setSelectElement(event.target.parentElement)
@@ -39,7 +40,7 @@ export default function({
       >
         X
       </Delete>
-      <Rotate data-dragevent="rotate" draggable hidden>
+      <Rotate data-dragevent="rotate" draggable selected={isSelected}>
         &#9813;
       </Rotate>
     </Wrapper>
@@ -69,6 +70,7 @@ const Delete = styled.div`
 `
 
 const Rotate = styled.div`
+  display:${props => (props.selected ? '' : 'none')}
   position: absolute;
   color: red;
   top: -10px;

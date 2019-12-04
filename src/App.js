@@ -1,10 +1,12 @@
 import React, { useState, useEffect } from 'react'
 import styled from 'styled-components/macro'
 import Carton from './Carton'
+import ToolBarTop from './ToolBarTop'
+import ToolbarRight from './ToolBarRight'
 import ToolbarButtom from './ToolbarButtom'
-import Toolbar from './ToolbarStyle'
+import ToolBarLeft from './ToolBarLeft'
 
-function App({ width, height, depth }) {
+export default function App({ width, height, depth, setMoveElement }) {
   const [selectElement, setSelectElement] = useState(null)
   const [elementDimensions, setElementDimensions] = useState({})
   const [elements, setElements] = useState([])
@@ -13,6 +15,8 @@ function App({ width, height, depth }) {
     pxTomm: 0.2645833333,
     pxTocm: 0.0264583333
   }
+
+  setMoveElement(selectElement)
 
   const cartonDimensions = {
     height: height * pxCalc.mmToPx,
@@ -32,7 +36,8 @@ function App({ width, height, depth }) {
     setElements([...elements, props])
   }
 
-  function updateElement(el) {
+  function updateElement(key) {
+    /*
     if (
       selectElement !== null &&
       selectElement.getAttribute('data-el') !== 'Carton'
@@ -47,24 +52,30 @@ function App({ width, height, depth }) {
       el.children[4].hidden = false
       el.children[5].hidden = false
     }
-
+    if (selectElement === el) {
+      console.log('same element')
+    }
     setSelectElement(el)
     const { width, height } = el.getBoundingClientRect()
     setElementDimensions({ width: width / scale, height: height / scale })
+    */
   }
 
   return (
     <Wrapper>
-      <Toolbar side="top">
+      <ToolBarTop
+        setSelectElement={setSelectElement}
+        selectElement={selectElement}
+      >
         <CartonDimension side="top">
           {(elementDimensions.width * pxCalc.pxTocm).toFixed(2)} cm
         </CartonDimension>
-      </Toolbar>
-      <Toolbar side="left">
+      </ToolBarTop>
+      <ToolBarLeft selectElement={selectElement} side="left">
         <CartonDimension side="left">
           {(elementDimensions.height * pxCalc.pxTocm).toFixed(2)} cm
         </CartonDimension>
-      </Toolbar>
+      </ToolBarLeft>
       <Board>
         <Carton
           dimensions={cartonDimensions}
@@ -75,7 +86,7 @@ function App({ width, height, depth }) {
           setElements={setElements}
         />
       </Board>
-      <Toolbar side="right" />
+      <ToolbarRight selectElement={selectElement} />
       <ToolbarButtom
         setSelectElement={updateElement}
         selectElement={selectElement}
@@ -84,8 +95,6 @@ function App({ width, height, depth }) {
     </Wrapper>
   )
 }
-
-export default App
 
 const Wrapper = styled.article`
   width: calc(100vw - 20px);

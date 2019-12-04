@@ -1,11 +1,12 @@
-import React from 'react'
+import React, { useState } from 'react'
+
 import styled from 'styled-components/macro'
 import AddElement from './AddElement'
 
 export default function({
   dimensions,
-  setSelectElement,
-  selectElement,
+  // setSelectElement,
+  // selectElement,
   elements,
   addElement,
   setElements
@@ -14,12 +15,13 @@ export default function({
   let startPosition = {}
   const height = dimensions.height * dimensions.scale
   const width = dimensions.width * dimensions.scale
-
+  const [selectedElement, setSelectedElement] = useState(0)
+  /*
   function handleClick(event) {
     setSelectElement(event.target)
     event.stopPropagation()
   }
-
+*/
   function onDragStart(event) {
     dragEvent = {
       el: event.target.parentElement,
@@ -45,6 +47,28 @@ export default function({
     dragEvent = false
   }
 
+  function handleSelectElement(key) {
+    if (selectedElement !== 0) {
+      console.log('reset el')
+      const index1 = elements.findIndex(item => item.key === selectedElement)
+      setElements([
+        ...elements.slice(0, index1),
+        { ...elements[index1], selected: false },
+        ...elements.slice(index1 + 1)
+      ])
+    }
+    setSelectedElement(key)
+    console.log('set selected', key)
+    if (key !== 0) {
+      const index = elements.findIndex(item => item.key === key)
+      setElements([
+        ...elements.slice(0, index),
+        { ...elements[index], selected: true },
+        ...elements.slice(index + 1)
+      ])
+    }
+  }
+
   function handleDeleteElement(key) {
     const index = elements.findIndex(item => item.key === key)
     setElements([...elements.slice(0, index), ...elements.slice(index + 1)])
@@ -66,7 +90,7 @@ export default function({
       data-el="Carton"
       height={height}
       width={width}
-      onClick={handleClick}
+      onClick={() => handleSelectElement(0)}
       onDragStart={onDragStart}
       onDragOver={handleDragOver}
       onDragEnd={handelDragEnd}
@@ -81,8 +105,8 @@ export default function({
             width: item.width || width,
             height: item.width || height
           }}
-          setSelectElement={setSelectElement}
-          selectElement={selectElement}
+          setSelectElement={() => handleSelectElement(item.key)}
+          isSelected={item.selected}
           handleDeleteElement={() => handleDeleteElement(item.key)}
           text={item.text || ''}
         />
