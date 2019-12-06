@@ -3,7 +3,7 @@ import styled from 'styled-components/macro'
 
 export default function(props) {
   let element = ''
-  if (props.el instanceof File) {
+  if (props.file) {
     element = (
       <Image
         {...props}
@@ -14,7 +14,7 @@ export default function(props) {
   } else {
     element = (
       <Element {...props} data-dragevent="move" draggable>
-        {props.text}
+        {props.props.text}
       </Element>
     )
   }
@@ -33,5 +33,6 @@ const Element = styled.div`
   align-items: center;
   width: 100%;
   height: 100%;
-  font-size: 100%;
+  font-size: ${props => props.props.fontSize}px;
+  color: ${props => props.props.color};
 `

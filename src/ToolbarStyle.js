@@ -16,7 +16,18 @@ export default styled.section`
       case 'bottom':
         return 'grid-area: 3/1/4/4; '
       default:
-        console.log('You have to set a Toolbarside [top/left/right/bottom]')
+        console.warn('You have to set a Toolbarside [top/left/right/bottom]')
     }
   }}
+`
+export const Label = styled.label`
+  display: fles;
+  justify-content: space-between;
+  align-items: center;
+  font-size: 10px;
+  display: block;
+  justify-content: center;
+  align-items: center;
+  height: 100%;
+  width: 50px;
 `

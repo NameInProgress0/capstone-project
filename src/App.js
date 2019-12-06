@@ -6,17 +6,61 @@ import ToolbarRight from './ToolBarRight'
 import ToolbarButtom from './ToolbarButtom'
 import ToolBarLeft from './ToolBarLeft'
 
-export default function App({ width, height, depth, setMoveElement }) {
-  const [selectElement, setSelectElement] = useState(null)
-  const [elementDimensions, setElementDimensions] = useState({})
+export default function App({ width, height, depth }) {
+  const [selectElement, setSelectElement] = useState(0)
   const [elements, setElements] = useState([])
+
+  useKeyPress()
+
+  function useKeyPress() {
+    function downHandler({ keyCode }) {
+      if (selectElement !== 0) {
+        const index = elements.findIndex(item => item.key === selectElement)
+
+        const update = elements[index].props
+
+        switch (keyCode) {
+          case 37: // Arrow Left
+            update.left -= 1
+            break
+          case 38: // Arrow UP
+            update.top -= 1
+            break
+          case 39: // Arrow Ricght
+            update.left += 1
+            break
+          case 40: // Arrow Down
+            update.top += 1
+            break
+          default:
+            return
+        }
+
+        setElements([
+          ...elements.slice(0, index),
+          {
+            ...elements[index],
+            props: { ...update }
+          },
+          ...elements.slice(index + 1)
+        ])
+      }
+    }
+
+    useEffect(() => {
+      window.addEventListener('keydown', downHandler)
+
+      return () => {
+        window.removeEventListener('keydown', downHandler)
+      }
+    }, [selectElement, elements])
+  }
+
   const pxCalc = {
     mmToPx: 3.779528,
     pxTomm: 0.2645833333,
     pxTocm: 0.0264583333
   }
-
-  setMoveElement(selectElement)
 
   const cartonDimensions = {
     height: height * pxCalc.mmToPx,
@@ -27,70 +71,69 @@ export default function App({ width, height, depth, setMoveElement }) {
   const scale = getScale(cartonDimensions)
   cartonDimensions.scale = scale
 
+  const [elementDimensions, setElementDimensions] = useState({
+    height: cartonDimensions.height * cartonDimensions.scale,
+    width: cartonDimensions.width * cartonDimensions.scale
+  })
+
   useEffect(() => {
-    const { height, width } = cartonDimensions
-    setElementDimensions({ height, width })
-  }, [])
+    if (selectElement !== 0) {
+      const { height, width } = elements.filter(
+        item => item.key === selectElement
+      )[0].props
+      setElementDimensions({ height, width })
+    } else {
+      const height = cartonDimensions.height * cartonDimensions.scale,
+        width = cartonDimensions.width * cartonDimensions.scale
+      setElementDimensions({ height, width })
+    }
+  }, [selectElement, elements])
 
   function addElement(props) {
     setElements([...elements, props])
   }
 
-  function updateElement(key) {
-    /*
-    if (
-      selectElement !== null &&
-      selectElement.getAttribute('data-el') !== 'Carton'
-    ) {
-      selectElement.style.borderColor = 'transparent'
-      selectElement.children[4].hidden = true
-      selectElement.children[5].hidden = true
-    }
-
-    if (el.getAttribute('data-el') !== 'Carton') {
-      el.style.borderColor = 'black'
-      el.children[4].hidden = false
-      el.children[5].hidden = false
-    }
-    if (selectElement === el) {
-      console.log('same element')
-    }
-    setSelectElement(el)
-    const { width, height } = el.getBoundingClientRect()
-    setElementDimensions({ width: width / scale, height: height / scale })
-    */
-  }
-
   return (
-    <Wrapper>
+    <Wrapper onKeyDown={console.log}>
       <ToolBarTop
-        setSelectElement={setSelectElement}
         selectElement={selectElement}
+        elements={elements}
+        setElements={setElements}
       >
         <CartonDimension side="top">
-          {(elementDimensions.width * pxCalc.pxTocm).toFixed(2)} cm
+          {((elementDimensions.width / scale) * pxCalc.pxTocm).toFixed(2)} cm
         </CartonDimension>
       </ToolBarTop>
-      <ToolBarLeft selectElement={selectElement} side="left">
+      <ToolBarLeft
+        selectElement={selectElement}
+        elements={elements}
+        setElements={setElements}
+        side="left"
+      >
         <CartonDimension side="left">
-          {(elementDimensions.height * pxCalc.pxTocm).toFixed(2)} cm
+          {((elementDimensions.height / scale) * pxCalc.pxTocm).toFixed(2)} cm
         </CartonDimension>
       </ToolBarLeft>
       <Board>
         <Carton
           dimensions={cartonDimensions}
-          setSelectElement={updateElement}
+          setSelectElement={setSelectElement}
           selectElement={selectElement}
           elements={elements}
           addElement={addElement}
           setElements={setElements}
         />
       </Board>
-      <ToolbarRight selectElement={selectElement} />
+      <ToolbarRight
+        selectElement={selectElement}
+        elements={elements}
+        setElements={setElements}
+      />
       <ToolbarButtom
-        setSelectElement={updateElement}
         selectElement={selectElement}
         addElement={addElement}
+        elements={elements}
+        setElements={setElements}
       />
     </Wrapper>
   )

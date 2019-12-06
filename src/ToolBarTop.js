@@ -1,33 +1,33 @@
 import React from 'react'
-import Toolbar from './ToolbarStyle'
+import Toolbar, { Label } from './ToolbarStyle'
 import MoveButton from './MoveElementButton'
 
-export default function({ selectElement, setSelectElement }) {
+export default function({ selectElement, elements, setElements, children }) {
   function moveElement() {
-    if (
-      selectElement !== null &&
-      selectElement.getAttribute('data-el') !== 'Carton'
-    ) {
-      const elPos = selectElement.getBoundingClientRect()
-      const carPos = selectElement.parentElement.getBoundingClientRect()
+    if (selectElement !== 0) {
+      const index = elements.findIndex(item => item.key === selectElement)
 
-      const el = selectElement
-      const bla = elPos.top - carPos.top
-      console.log(bla)
-      console.log(bla - 1)
-      console.log(elPos.top - carPos.top)
-      console.log(carPos.top - elPos.top)
-      selectElement.style.top = bla - 1 + 'px'
-      // selectElement.getBoundingClientRect.left += 1
-      console.log(selectElement.scrollLeft)
-      setSelectElement(el)
+      setElements([
+        ...elements.slice(0, index),
+        {
+          ...elements[index],
+          props: {
+            ...elements[index].props,
+            top: elements[index].props.top - 1
+          }
+        },
+        ...elements.slice(index + 1)
+      ])
     }
   }
   return (
     <Toolbar side="top">
+      <Label />
       <MoveButton onClick={moveElement} side="Y">
         &uarr;
       </MoveButton>
+      {children}
+      <Label />
     </Toolbar>
   )
 }

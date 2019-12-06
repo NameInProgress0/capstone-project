@@ -1,12 +1,11 @@
-import React, { useState } from 'react'
-
+import React from 'react'
 import styled from 'styled-components/macro'
 import AddElement from './AddElement'
 
 export default function({
   dimensions,
-  // setSelectElement,
-  // selectElement,
+  setSelectElement,
+  selectElement,
   elements,
   addElement,
   setElements
@@ -15,17 +14,12 @@ export default function({
   let startPosition = {}
   const height = dimensions.height * dimensions.scale
   const width = dimensions.width * dimensions.scale
-  const [selectedElement, setSelectedElement] = useState(0)
-  /*
-  function handleClick(event) {
-    setSelectElement(event.target)
-    event.stopPropagation()
-  }
-*/
+
   function onDragStart(event) {
     dragEvent = {
       el: event.target.parentElement,
-      function: event.target.getAttribute('data-dragevent')
+      function: event.target.getAttribute('data-dragevent'),
+      id: event.target.parentElement.id
     }
     startPosition = {
       x: event.pageX,
@@ -41,24 +35,38 @@ export default function({
   function handleDragOver(event) {
     event.preventDefault()
     event.stopPropagation()
-    if (dragEvent) handleDragFunctions(event, startPosition, dragEvent)
+    if (dragEvent)
+      dragEvent.update = handleDragFunctions(event, startPosition, dragEvent)
   }
   function handelDragEnd() {
+    if (dragEvent) {
+      const index = elements.findIndex(item => item.key === dragEvent.id)
+
+      setElements([
+        ...elements.slice(0, index),
+        {
+          ...elements[index],
+          props: { ...elements[index].props, ...dragEvent.update }
+        },
+        ...elements.slice(index + 1)
+      ])
+    }
+
     dragEvent = false
   }
 
-  function handleSelectElement(key) {
-    if (selectedElement !== 0) {
-      console.log('reset el')
-      const index1 = elements.findIndex(item => item.key === selectedElement)
+  function handleSelectElement(event, key) {
+    event.stopPropagation()
+
+    if (selectElement !== 0) {
+      const index = elements.findIndex(item => item.key === selectElement)
       setElements([
-        ...elements.slice(0, index1),
-        { ...elements[index1], selected: false },
-        ...elements.slice(index1 + 1)
+        ...elements.slice(0, index),
+        { ...elements[index], selected: false },
+        ...elements.slice(index + 1)
       ])
     }
-    setSelectedElement(key)
-    console.log('set selected', key)
+
     if (key !== 0) {
       const index = elements.findIndex(item => item.key === key)
       setElements([
@@ -67,6 +75,7 @@ export default function({
         ...elements.slice(index + 1)
       ])
     }
+    setSelectElement(key)
   }
 
   function handleDeleteElement(key) {
@@ -80,8 +89,15 @@ export default function({
     if (!dragEvent) {
       addElement({
         key: Math.random(),
-        dataEl: 'Image',
-        el: event.dataTransfer.files[0]
+        type: 'Image',
+        file: event.dataTransfer.files[0],
+        selected: false,
+        props: {
+          height: height * 0.5,
+          width: width * 0.5,
+          top: height * 0.5,
+          left: width * 0.5
+        }
       })
     }
   }
@@ -90,7 +106,7 @@ export default function({
       data-el="Carton"
       height={height}
       width={width}
-      onClick={() => handleSelectElement(0)}
+      onClick={event => handleSelectElement(event, 0)}
       onDragStart={onDragStart}
       onDragOver={handleDragOver}
       onDragEnd={handelDragEnd}
@@ -98,17 +114,19 @@ export default function({
     >
       {elements.map(item => (
         <AddElement
+          id={item.key}
+          props={item.props}
           key={item.key}
-          dataEl={item.dataEl}
-          el={item.el}
+          type={item.type}
+          file={item.file}
           cartonDimension={{
-            width: item.width || width,
-            height: item.width || height
+            width: width,
+            height: height
           }}
-          setSelectElement={() => handleSelectElement(item.key)}
+          setSelectElement={event => handleSelectElement(event, item.key)}
           isSelected={item.selected}
           handleDeleteElement={() => handleDeleteElement(item.key)}
-          text={item.text || ''}
+          text={item.key}
         />
       ))}
     </Carton>
@@ -123,31 +141,39 @@ const Carton = styled.section`
   position: relative;
   background-color: saddlebrown;
   overflow: hidden;
-  border-color: black;
-  border-style: solid;
-  border-width: 1px;
+  border: 1px solid black;
 `
 
 function handleDragFunctions(event, startPosition, dragEvent) {
+  let update = {}
+
   if (dragEvent.function === 'move') {
-    dragEvent.el.style.left =
+    const left =
       event.pageX -
       startPosition.x +
-      (startPosition.el.left - startPosition.carton.left) +
-      'px'
-    dragEvent.el.style.top =
+      (startPosition.el.left - startPosition.carton.left)
+
+    const top =
       event.pageY -
       startPosition.y +
-      (startPosition.el.top - startPosition.carton.top) +
-      'px'
+      (startPosition.el.top - startPosition.carton.top)
+
+    dragEvent.el.style.left = left + 'px'
+    dragEvent.el.style.top = top + 'px'
+    update.left = left
+    update.top = top
   }
   if (dragEvent.function === 'resizeX' || dragEvent.function === 'resizeXY') {
-    dragEvent.el.style.width =
-      startPosition.el.width + (event.pageX - startPosition.x) + 'px'
+    const width = startPosition.el.width + (event.pageX - startPosition.x)
+
+    dragEvent.el.style.width = width + 'px'
+    update.width = width
   }
   if (dragEvent.function === 'resizeY' || dragEvent.function === 'resizeXY') {
-    dragEvent.el.style.height =
-      startPosition.el.height + (event.pageY - startPosition.y) + 'px'
+    const height = startPosition.el.height + (event.pageY - startPosition.y)
+
+    dragEvent.el.style.height = height + 'px'
+    update.height = height
     /**
      * resize Font size
      */
@@ -156,13 +182,17 @@ function handleDragFunctions(event, startPosition, dragEvent) {
         dragEvent.el.getBoundingClientRect().height * 0.63 + 'px'
       dragEvent.el.style.width = 'auto'
       dragEvent.el.style.height = 'auto'
+
+      update.fontSize = height * 0.63
     }
   }
   if (dragEvent.function === 'rotate') {
     var center_x = startPosition.el.left + dragEvent.el.offsetWidth * 0.2
     var center_y = startPosition.el.top + dragEvent.el.offsetHeight * 0.1
     var radians = Math.atan2(event.pageX - center_x, event.pageY - center_y)
-    var degree = radians * (180 / Math.PI) * -1 + 90
+    var degree = Math.floor(radians * (180 / Math.PI) * -1 + 90)
     dragEvent.el.style.transform = `rotate(${degree}deg)`
+    update.rotate = degree
   }
+  return update
 }
