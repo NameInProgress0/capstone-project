@@ -3,43 +3,31 @@ import styled from 'styled-components/macro'
 import CreateElement from './CreateElement'
 
 export default function({
-  el = false,
-  cartonDimension = false,
+  file = false,
   setSelectElement,
   text = false,
-  dataEl,
-  handleDeleteElement
+  type,
+  handleDeleteElement,
+  isSelected,
+  props,
+  id
 }) {
-  const warpperDimensions = {
-    height: cartonDimension.height * 0.5 || 'auto',
-    width: cartonDimension.width * 0.5 || 'auto'
-  }
-
   return (
-    <Wrapper data-el={dataEl} {...warpperDimensions}>
+    <Wrapper id={id} data-el={type} {...props} selected={isSelected}>
       <CreateElement
-        onkeydown={event => console.log(event)}
-        onClick={event => {
-          event.stopPropagation()
-          setSelectElement(event.target.parentElement)
-        }}
-        el={el}
+        props={props}
+        onClick={setSelectElement}
+        file={file}
         text={text}
       />
       <ResizeX data-dragevent="resizeX" draggable />
 
       <ResizeY resize="Y" data-dragevent="resizeY" draggable />
       <ResizeXY data-dragevent="resizeXY" draggable />
-      <Delete
-        onClick={event => {
-          event.stopPropagation()
-          handleDeleteElement()
-        }}
-        hidden
-      >
+      <Delete selected={isSelected} onClick={handleDeleteElement}>
         X
       </Delete>
-      <Rotate data-dragevent="rotate" draggable hidden>
+      <Rotate data-dragevent="rotate" draggable selected={isSelected}>
         &#9813;
       </Rotate>
     </Wrapper>
@@ -47,17 +35,20 @@ export default function({
 }
 
 const Wrapper = styled.div`
-  border: 1px solid transparent;
+  border: 1px solid ${props => (props.selected ? 'black' : 'transparent')};
   position: absolute;
   height: ${props => props.height}px;
   width: ${props => props.width}px;
   maxheight: calc(100% - 2px);
   maxwidth: calc(100% - 2px);
-  top: calc(50% - ${props => props.height * 0.5}px);
-  left: calc(50% - ${props => props.width * 0.5}px);
+  top: ${props => props.top}px;
+  left: ${props => props.left}px;
+  transform: rotate(${props => props.rotate}deg);
+  background-color: ${props => props.background};
 `
 
 const Delete = styled.div`
+  display: ${props => (props.selected ? '' : 'none')};
   position: absolute;
   color: red;
   top: -10px;
@@ -69,6 +60,7 @@ const Delete = styled.div`
 `
 
 const Rotate = styled.div`
+  display: ${props => (props.selected ? '' : 'none')};
   position: absolute;
   color: red;
   top: -10px;

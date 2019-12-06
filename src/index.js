@@ -9,6 +9,7 @@ const carton = {
   width: 1500, // mm
   depth: 500 //mm
 }
+
 ReactDOM.render(
   <>
     <App {...carton} />

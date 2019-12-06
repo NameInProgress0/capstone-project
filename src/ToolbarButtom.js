@@ -1,52 +1,138 @@
-import React from 'react'
+import React, { useEffect, useState } from 'react'
 import styled from 'styled-components/macro'
-import Toolbar from './ToolbarStyle'
+import Toolbar, { Label } from './ToolbarStyle'
+import MoveButton from './MoveElementButton'
 
-export default function({ selectElement, setSelectElement, addElement }) {
+export default function({ selectElement, addElement, elements, setElements }) {
+  const [color, setColor] = useState('#ffffff')
+  const [backgroundColor, setBackgroundColor] = useState('#ffffff')
+  const [rotate, setRotate] = useState(0)
+  const [fontSize, setFontSize] = useState(16)
+
   function addTextElement() {
     addElement({
-      key: Math.random(),
-      dataEl: 'Text',
-      text: 'Your Text Here',
-      width: 'auto',
-      height: 'auto'
+      key: 'el' + String(Math.random()).replace('.', ''),
+      type: 'Text',
+      selected: false,
+      props: {
+        height: 19.2,
+        width: 102,
+        top: 30,
+        left: 60,
+        rotate: 0,
+        text: 'Your Text Here',
+        fontSize: 16,
+        color: '#000000',
+        background: 'transparent'
+      }
     })
   }
-  function handleColor(event) {
-    if (
-      selectElement !== null &&
-      selectElement.getAttribute('data-el') === 'Text'
-    ) {
-      selectElement.firstChild.style.color = event.target.value
+
+  useEffect(() => {
+    if (selectElement !== 0) {
+      const { rotate, fontSize, color, background } = elements.filter(
+        item => item.key === selectElement
+      )[0].props
+      setRotate(rotate)
+      setColor(color)
+      setFontSize(fontSize)
+      setBackgroundColor(background)
+    }
+  }, [selectElement, elements])
+
+  function moveElement() {
+    if (selectElement !== 0) {
+      const index = elements.findIndex(item => item.key === selectElement)
+
+      setElements([
+        ...elements.slice(0, index),
+        {
+          ...elements[index],
+          props: {
+            ...elements[index].props,
+            top: elements[index].props.top + 1
+          }
+        },
+        ...elements.slice(index + 1)
+      ])
     }
   }
+
+  function handleColor(event) {
+    if (selectElement !== 0) {
+      const index = elements.findIndex(item => item.key === selectElement)
+
+      if (elements[index].type === 'Text') {
+        setElements([
+          ...elements.slice(0, index),
+          {
+            ...elements[index],
+            props: { ...elements[index].props, color: event.target.value }
+          },
+          ...elements.slice(index + 1)
+        ])
+      }
+    }
+  }
+
   function handleFontSize(event) {
-    if (
-      selectElement !== null &&
-      selectElement.getAttribute('data-el') === 'Text'
-    ) {
-      const el = selectElement
+    if (selectElement !== 0) {
+      const el = document.querySelector('#' + selectElement)
+      el.style.height = 'auto'
+      el.style.width = 'auto'
       el.firstChild.style.fontSize = event.target.value + 'px'
-      setSelectElement(el)
+      const { width, height } = el.getBoundingClientRect()
+      const index = elements.findIndex(item => item.key === selectElement)
+
+      if (elements[index].type === 'Text') {
+        setElements([
+          ...elements.slice(0, index),
+          {
+            ...elements[index],
+            props: {
+              ...elements[index].props,
+              fontSize: event.target.value,
+              height: height,
+              width: width
+            }
+          },
+          ...elements.slice(index + 1)
+        ])
+      }
     }
   }
 
   function handleRotate(event) {
-    if (
-      selectElement !== null &&
-      selectElement.getAttribute('data-el') !== 'Carton'
-    ) {
-      const el = selectElement
-      el.style.transform = `rotate(${event.target.value}deg)`
-      setSelectElement(el)
+    if (selectElement !== 0) {
+      const index = elements.findIndex(item => item.key === selectElement)
+
+      if (elements[index].type === 'Text') {
+        setElements([
+          ...elements.slice(0, index),
+          {
+            ...elements[index],
+            props: { ...elements[index].props, rotate: event.target.value }
+          },
+          ...elements.slice(index + 1)
+        ])
+      }
     }
   }
+
   function handleBackgroundColor(event) {
-    if (
-      selectElement !== null &&
-      selectElement.getAttribute('data-el') === 'Text'
-    ) {
-      selectElement.firstChild.style.backgroundColor = event.target.value
+    if (selectElement !== 0) {
+      const index = elements.findIndex(item => item.key === selectElement)
+
+      if (elements[index].type === 'Text') {
+        setElements([
+          ...elements.slice(0, index),
+          {
+            ...elements[index],
+            props: { ...elements[index].props, background: event.target.value }
+          },
+          ...elements.slice(index + 1)
+        ])
+      }
     }
   }
 
@@ -59,36 +145,22 @@ export default function({ selectElement, setSelectElement, addElement }) {
       <Label>
         <br />
         Text Color
-        <Input type="color" onChange={handleColor} />
+        <Input type="color" onChange={handleColor} value={color} />
       </Label>
       <Label>
         <br />
         Font Size
-        <Input
-          type="number"
-          value={
-            selectElement !== null &&
-            Number(
-              selectElement.firstChild.style.fontSize.replace('px', '')
-            ) !== 0
-              ? Number(
-                  selectElement.firstChild.style.fontSize.replace('px', '')
-                )
-              : 16
-          }
-          onChange={handleFontSize}
-        />
+        <Input type="number" value={fontSize} onChange={handleFontSize} />
       </Label>
+      <MoveButton side="Y" onClick={moveElement}>
+        &darr;
+      </MoveButton>
       <Label>
         <br />
         Rotate
         <Input
           type="number"
-          value={
-            selectElement !== null && selectElement.style.transform !== ''
-              ? Number(selectElement.style.transform.match(/\d+/)[0])
-              : 0
-          }
+          value={rotate || 0}
           onChange={handleRotate}
           min="-360"
           max="360"
@@ -96,7 +168,11 @@ export default function({ selectElement, setSelectElement, addElement }) {
       </Label>
       <Label>
         Background Color
-        <Input type="color" onChange={handleBackgroundColor} />
+        <Input
+          type="color"
+          value={backgroundColor}
+          onChange={handleBackgroundColor}
+        />
       </Label>
     </Toolbar>
   )
@@ -110,17 +186,6 @@ const CreateTextElement = styled.div`
   width: 50px;
 `
 
-const Label = styled.label`
-  display: fles;
-  justify-content: space-between;
-  align-items: center;
-  font-size: 10px;
-  display: block;
-  justify-content: center;
-  align-items: center;
-  height: 100%;
-  width: 50px;
-`
 const Input = styled.input`
   width: 100%;
 `
