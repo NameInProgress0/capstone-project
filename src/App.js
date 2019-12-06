@@ -1,10 +1,10 @@
 import React, { useState, useEffect } from 'react'
 import styled from 'styled-components/macro'
 import Carton from './Carton'
-import ToolBarTop from './ToolBarTop'
+import ToolbarTop from './ToolBarTop'
 import ToolbarRight from './ToolBarRight'
 import ToolbarButtom from './ToolbarButtom'
-import ToolBarLeft from './ToolBarLeft'
+import ToolbarLeft from './ToolBarLeft'
 
 export default function App({ width, height, depth }) {
   const [selectElement, setSelectElement] = useState(0)
@@ -26,7 +26,7 @@ export default function App({ width, height, depth }) {
           case 38: // Arrow UP
             update.top -= 1
             break
-          case 39: // Arrow Ricght
+          case 39: // Arrow Right
             update.left += 1
             break
           case 40: // Arrow Down
@@ -94,8 +94,8 @@ export default function App({ width, height, depth }) {
   }
 
   return (
-    <Wrapper onKeyDown={console.log}>
-      <ToolBarTop
+    <Wrapper>
+      <ToolbarTop
         selectElement={selectElement}
         elements={elements}
         setElements={setElements}
@@ -103,8 +103,8 @@ export default function App({ width, height, depth }) {
         <CartonDimension side="top">
           {((elementDimensions.width / scale) * pxCalc.pxTocm).toFixed(2)} cm
         </CartonDimension>
-      </ToolBarTop>
-      <ToolBarLeft
+      </ToolbarTop>
+      <ToolbarLeft
         selectElement={selectElement}
         elements={elements}
         setElements={setElements}
@@ -113,7 +113,7 @@ export default function App({ width, height, depth }) {
         <CartonDimension side="left">
           {((elementDimensions.height / scale) * pxCalc.pxTocm).toFixed(2)} cm
         </CartonDimension>
-      </ToolBarLeft>
+      </ToolbarLeft>
       <Board>
         <Carton
           dimensions={cartonDimensions}

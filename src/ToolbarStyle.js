@@ -21,13 +21,7 @@ export default styled.section`
   }}
 `
 export const Label = styled.label`
-  display: fles;
-  justify-content: space-between;
-  align-items: center;
   font-size: 10px;
-  display: block;
-  justify-content: center;
-  align-items: center;
   height: 100%;
   width: 50px;
 `
