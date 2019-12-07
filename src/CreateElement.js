@@ -7,7 +7,7 @@ export default function(props) {
     element = (
       <Image
         {...props}
-        src={URL.createObjectURL(props.el)}
+        src={URL.createObjectURL(props.file)}
         data-dragevent="move"
       />
     )

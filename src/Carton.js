@@ -58,9 +58,9 @@ export default function({
   function handleSelectElement(event, key) {
     event.stopPropagation()
 
-    if (key === selectElement) {
-      if (selectElement !== 0) {
-        const index = elements.findIndex(item => item.key === selectElement)
+    if (key === selectElement && selectElement !== 0) {
+      const index = elements.findIndex(item => item.key === selectElement)
+      if (elements[index].props.hasOwnProperty('changeText')) {
         setElements([
           ...elements.slice(0, index),
           {
@@ -103,7 +103,7 @@ export default function({
     event.stopPropagation()
     if (!dragEvent) {
       addElement({
-        key: Math.random(),
+        key: 'el' + String(Math.random()).replace('.', ''),
         type: 'Image',
         file: event.dataTransfer.files[0],
         selected: false,
