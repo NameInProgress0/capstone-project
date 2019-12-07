@@ -13,7 +13,13 @@ export default function(props) {
     )
   } else {
     element = (
-      <Element {...props} data-dragevent="move" draggable>
+      <Element
+        {...props}
+        contentEditable={props.props.changeText}
+        data-dragevent="move"
+        draggable
+        onBlur={props.handleBlur}
+      >
         {props.props.text}
       </Element>
     )

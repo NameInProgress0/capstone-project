@@ -5,12 +5,12 @@ import CreateElement from './CreateElement'
 export default function({
   file = false,
   setSelectElement,
-  text = false,
   type,
   handleDeleteElement,
   isSelected,
   props,
-  id
+  id,
+  handleBlur
 }) {
   return (
     <Wrapper id={id} data-el={type} {...props} selected={isSelected}>
@@ -18,7 +18,7 @@ export default function({
         props={props}
         onClick={setSelectElement}
         file={file}
-        text={text}
+        handleBlur={handleBlur}
       />
       <ResizeX data-dragevent="resizeX" draggable />
 
@@ -38,7 +38,7 @@ const Wrapper = styled.div`
   border: 1px solid ${props => (props.selected ? 'black' : 'transparent')};
   position: absolute;
   height: ${props => props.height}px;
-  width: ${props => props.width}px;
+  width: ${props => (props.changeText ? 'auto' : props.width + 'px')};
   maxheight: calc(100% - 2px);
   maxwidth: calc(100% - 2px);
   top: ${props => props.top}px;

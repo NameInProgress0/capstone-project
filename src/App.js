@@ -16,34 +16,35 @@ export default function App({ width, height, depth }) {
     function downHandler({ keyCode }) {
       if (selectElement !== 0) {
         const index = elements.findIndex(item => item.key === selectElement)
+        if (!elements[index].props.changeText) {
+          const update = elements[index].props
 
-        const update = elements[index].props
+          switch (keyCode) {
+            case 37: // Arrow Left
+              update.left -= 1
+              break
+            case 38: // Arrow UP
+              update.top -= 1
+              break
+            case 39: // Arrow Right
+              update.left += 1
+              break
+            case 40: // Arrow Down
+              update.top += 1
+              break
+            default:
+              return
+          }
 
-        switch (keyCode) {
-          case 37: // Arrow Left
-            update.left -= 1
-            break
-          case 38: // Arrow UP
-            update.top -= 1
-            break
-          case 39: // Arrow Right
-            update.left += 1
-            break
-          case 40: // Arrow Down
-            update.top += 1
-            break
-          default:
-            return
+          setElements([
+            ...elements.slice(0, index),
+            {
+              ...elements[index],
+              props: { ...update }
+            },
+            ...elements.slice(index + 1)
+          ])
         }
-
-        setElements([
-          ...elements.slice(0, index),
-          {
-            ...elements[index],
-            props: { ...update }
-          },
-          ...elements.slice(index + 1)
-        ])
       }
     }
 

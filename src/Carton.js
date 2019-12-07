@@ -58,23 +58,38 @@ export default function({
   function handleSelectElement(event, key) {
     event.stopPropagation()
 
-    if (selectElement !== 0) {
-      const index = elements.findIndex(item => item.key === selectElement)
-      setElements([
-        ...elements.slice(0, index),
-        { ...elements[index], selected: false },
-        ...elements.slice(index + 1)
-      ])
+    if (key === selectElement) {
+      if (selectElement !== 0) {
+        const index = elements.findIndex(item => item.key === selectElement)
+        setElements([
+          ...elements.slice(0, index),
+          {
+            ...elements[index],
+            props: { ...elements[index].props, changeText: true }
+          },
+          ...elements.slice(index + 1)
+        ])
+      }
+    } else {
+      if (selectElement !== 0) {
+        const index = elements.findIndex(item => item.key === selectElement)
+        setElements([
+          ...elements.slice(0, index),
+          { ...elements[index], selected: false },
+          ...elements.slice(index + 1)
+        ])
+      }
+
+      if (key !== 0) {
+        const index = elements.findIndex(item => item.key === key)
+        setElements([
+          ...elements.slice(0, index),
+          { ...elements[index], selected: true },
+          ...elements.slice(index + 1)
+        ])
+      }
     }
 
-    if (key !== 0) {
-      const index = elements.findIndex(item => item.key === key)
-      setElements([
-        ...elements.slice(0, index),
-        { ...elements[index], selected: true },
-        ...elements.slice(index + 1)
-      ])
-    }
     setSelectElement(key)
   }
 
@@ -101,6 +116,23 @@ export default function({
       })
     }
   }
+
+  function handleBlur(event) {
+    const index = elements.findIndex(item => item.key === selectElement)
+    setElements([
+      ...elements.slice(0, index),
+      {
+        ...elements[index],
+        props: {
+          ...elements[index].props,
+          text: event.target.textContent,
+          width: event.target.parentElement.offsetWidth,
+          changeText: false
+        }
+      },
+      ...elements.slice(index + 1)
+    ])
+  }
   return (
     <Carton
       data-el="Carton"
@@ -126,7 +158,7 @@ export default function({
           setSelectElement={event => handleSelectElement(event, item.key)}
           isSelected={item.selected}
           handleDeleteElement={() => handleDeleteElement(item.key)}
-          text={item.key}
+          handleBlur={handleBlur}
         />
       ))}
     </Carton>
