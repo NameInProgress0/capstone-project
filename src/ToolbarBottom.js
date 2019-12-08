@@ -15,6 +15,7 @@ export default function({ selectElement, addElement, elements, setElements }) {
       type: 'Text',
       selected: false,
       props: {
+        changeText: false,
         height: 19.2,
         width: 102,
         top: 30,

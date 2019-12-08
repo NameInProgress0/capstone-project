@@ -7,13 +7,19 @@ export default function(props) {
     element = (
       <Image
         {...props}
-        src={URL.createObjectURL(props.el)}
+        src={URL.createObjectURL(props.file)}
         data-dragevent="move"
       />
     )
   } else {
     element = (
-      <Element {...props} data-dragevent="move" draggable>
+      <Element
+        {...props}
+        contentEditable={props.props.changeText}
+        data-dragevent="move"
+        draggable
+        onBlur={props.handleBlur}
+      >
         {props.props.text}
       </Element>
     )
