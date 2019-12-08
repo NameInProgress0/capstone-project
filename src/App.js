@@ -1,10 +1,10 @@
 import React, { useState, useEffect } from 'react'
 import styled from 'styled-components/macro'
 import Carton from './Carton'
-import ToolbarTop from './ToolBarTop'
-import ToolbarRight from './ToolBarRight'
-import ToolbarButtom from './ToolbarButtom'
-import ToolbarLeft from './ToolBarLeft'
+import ToolbarTop from './ToolbarTop'
+import ToolbarRight from './ToolbarRight'
+import ToolbarBottom from './ToolbarBottom'
+import ToolbarLeft from './ToolbarLeft'
 
 export default function App({ width, height, depth }) {
   const [selectElement, setSelectElement] = useState(0)
@@ -130,7 +130,7 @@ export default function App({ width, height, depth }) {
         elements={elements}
         setElements={setElements}
       />
-      <ToolbarButtom
+      <ToolbarBottom
         selectElement={selectElement}
         addElement={addElement}
         elements={elements}
