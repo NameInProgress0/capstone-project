@@ -8,7 +8,8 @@ import ToolbarLeft from './ToolbarLeft'
 
 export default function App({ width, height, depth }) {
   const [selectElement, setSelectElement] = useState(0)
-  const [elements, setElements] = useState([])
+  const [elements, setElements] = useState([[], [], [], []])
+  const [cartonSide, setCartonSide] = useState(0)
 
   useKeyPress()
 
@@ -63,6 +64,24 @@ export default function App({ width, height, depth }) {
     pxTocm: 0.0264583333
   }
 
+  function handleCartonSide(turnSide) {
+    let turn = 0
+    switch (turnSide) {
+      case 'left':
+        turn = cartonSide - 1
+        break
+      case 'right':
+        turn = cartonSide + 1
+        break
+      default:
+        return
+    }
+
+    turn = turn < 0 ? 3 : turn
+    turn = turn > 3 ? 0 : turn
+    setCartonSide(turn)
+  }
+
   const cartonDimensions = {
     height: height * pxCalc.mmToPx,
     width: width * pxCalc.mmToPx,
@@ -71,6 +90,10 @@ export default function App({ width, height, depth }) {
 
   const scale = getScale(cartonDimensions)
   cartonDimensions.scale = scale
+
+  if (cartonSide % 2) {
+    cartonDimensions.width = cartonDimensions.depth
+  }
 
   const [elementDimensions, setElementDimensions] = useState({
     height: cartonDimensions.height * cartonDimensions.scale,
@@ -91,7 +114,7 @@ export default function App({ width, height, depth }) {
   }, [selectElement, elements])
 
   function addElement(props) {
-    setElements([...elements, props])
+    setElements([...elements, [...elements[cartonSide], props]])
   }
 
   return (
@@ -106,6 +129,8 @@ export default function App({ width, height, depth }) {
         </CartonDimension>
       </ToolbarTop>
       <ToolbarLeft
+        cartonSide={cartonSide}
+        handleCartonSide={handleCartonSide}
         selectElement={selectElement}
         elements={elements}
         setElements={setElements}
@@ -123,6 +148,7 @@ export default function App({ width, height, depth }) {
           elements={elements}
           addElement={addElement}
           setElements={setElements}
+          cartonSide={cartonSide}
         />
       </Board>
       <ToolbarRight
