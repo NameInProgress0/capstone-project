@@ -3,7 +3,13 @@ import styled from 'styled-components/macro'
 import Toolbar, { Label } from './ToolbarStyle'
 import MoveButton from './MoveElementButton'
 
-export default function({ selectElement, addElement, elements, setElements }) {
+export default function({
+  selectElement,
+  addElement,
+  elements,
+  setElements,
+  cartonSide
+}) {
   const [color, setColor] = useState('#ffffff')
   const [backgroundColor, setBackgroundColor] = useState('#ffffff')
   const [rotate, setRotate] = useState(0)
@@ -31,9 +37,9 @@ export default function({ selectElement, addElement, elements, setElements }) {
 
   useEffect(() => {
     if (selectElement !== 0) {
-      const { rotate, fontSize, color, background } = elements.filter(
-        item => item.key === selectElement
-      )[0].props
+      const { rotate, fontSize, color, background } = elements[
+        cartonSide
+      ].filter(item => item.key === selectElement)[0].props
       setRotate(rotate)
       setColor(color)
       setFontSize(fontSize)
@@ -43,97 +49,71 @@ export default function({ selectElement, addElement, elements, setElements }) {
 
   function moveElement() {
     if (selectElement !== 0) {
-      const index = elements.findIndex(item => item.key === selectElement)
-
-      setElements([
-        ...elements.slice(0, index),
-        {
-          ...elements[index],
-          props: {
-            ...elements[index].props,
-            top: elements[index].props.top + 1
-          }
-        },
-        ...elements.slice(index + 1)
-      ])
+      const index = elements[cartonSide].findIndex(
+        item => item.key === selectElement
+      )
+      const updateElements = elements.slice()
+      updateElements[cartonSide][index].props.top += 1
+      setElements(updateElements)
     }
   }
 
   function handleColor(event) {
     if (selectElement !== 0) {
-      const index = elements.findIndex(item => item.key === selectElement)
-
-      if (elements[index].type === 'Text') {
-        setElements([
-          ...elements.slice(0, index),
-          {
-            ...elements[index],
-            props: { ...elements[index].props, color: event.target.value }
-          },
-          ...elements.slice(index + 1)
-        ])
-      }
+      const index = elements[cartonSide].findIndex(
+        item => item.key === selectElement
+      )
+      const updateElements = elements.slice()
+      updateElements[cartonSide][index].props.color = event.target.value
+      setElements(updateElements)
     }
   }
 
   function handleFontSize(event) {
     if (selectElement !== 0) {
-      const el = document.querySelector('#' + selectElement)
-      el.style.height = 'auto'
-      el.style.width = 'auto'
-      el.firstChild.style.fontSize = event.target.value + 'px'
-      const { width, height } = el.getBoundingClientRect()
-      const index = elements.findIndex(item => item.key === selectElement)
+      const index = elements[cartonSide].findIndex(
+        item => item.key === selectElement
+      )
+      if (elements[cartonSide][index].type === 'Text') {
+        const el = document.querySelector('#' + selectElement)
+        el.style.height = 'auto'
+        el.style.width = 'auto'
+        el.firstChild.style.fontSize = event.target.value + 'px'
+        const { width, height } = el.getBoundingClientRect()
 
-      if (elements[index].type === 'Text') {
-        setElements([
-          ...elements.slice(0, index),
-          {
-            ...elements[index],
-            props: {
-              ...elements[index].props,
-              fontSize: event.target.value,
-              height: height,
-              width: width
-            }
-          },
-          ...elements.slice(index + 1)
-        ])
+        const updateElements = elements.slice()
+
+        updateElements[cartonSide][index].props = {
+          ...updateElements[cartonSide][index].props,
+          fontSize: event.target.value,
+          height: height,
+          width: width
+        }
+
+        setElements(updateElements)
       }
     }
   }
 
   function handleRotate(event) {
     if (selectElement !== 0) {
-      const index = elements.findIndex(item => item.key === selectElement)
-
-      if (elements[index].type === 'Text') {
-        setElements([
-          ...elements.slice(0, index),
-          {
-            ...elements[index],
-            props: { ...elements[index].props, rotate: event.target.value }
-          },
-          ...elements.slice(index + 1)
-        ])
-      }
+      const index = elements[cartonSide].findIndex(
+        item => item.key === selectElement
+      )
+      const updateElements = elements.slice()
+      updateElements[cartonSide][index].props.rotate = event.target.value
+      setElements(updateElements)
     }
   }
 
   function handleBackgroundColor(event) {
     if (selectElement !== 0) {
-      const index = elements.findIndex(item => item.key === selectElement)
-
-      if (elements[index].type === 'Text') {
-        setElements([
-          ...elements.slice(0, index),
-          {
-            ...elements[index],
-            props: { ...elements[index].props, background: event.target.value }
-          },
-          ...elements.slice(index + 1)
-        ])
-      }
+      const index = elements[cartonSide].findIndex(
+        item => item.key === selectElement
+      )
+      const updateElements = elements.slice()
+      updateElements[cartonSide][index].props.background = event.target.value
+      setElements(updateElements)
     }
   }
 

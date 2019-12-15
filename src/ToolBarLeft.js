@@ -2,22 +2,24 @@ import React from 'react'
 import Toolbar from './ToolbarStyle'
 import MoveButton from './MoveElementButton'
 
-export default function({ selectElement, elements, setElements, children }) {
+export default function({
+  selectElement,
+  elements,
+  setElements,
+  children,
+  handleCartonSide,
+  cartonSide
+}) {
   function moveElement() {
-    if (selectElement !== 0) {
-      const index = elements.findIndex(item => item.key === selectElement)
+    selectElement === 0 && handleCartonSide('left')
 
-      setElements([
-        ...elements.slice(0, index),
-        {
-          ...elements[index],
-          props: {
-            ...elements[index].props,
-            left: elements[index].props.left - 1
-          }
-        },
-        ...elements.slice(index + 1)
-      ])
+    if (selectElement !== 0) {
+      const index = elements[cartonSide].findIndex(
+        item => item.key === selectElement
+      )
+      const updateEl = elements.slice()
+      updateEl[cartonSide][index].props.left -= 1
+      setElements(updateEl)
     }
   }
 
