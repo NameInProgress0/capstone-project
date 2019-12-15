@@ -17,21 +17,9 @@ export default function({
       const index = elements[cartonSide].findIndex(
         item => item.key === selectElement
       )
-
-      setElements([
-        ...elements,
-        [
-          ...elements[cartonSide].slice(0, index),
-          {
-            ...elements[cartonSide][index],
-            props: {
-              ...elements[cartonSide][index].props,
-              left: elements[cartonSide][index].props.left - 1
-            }
-          },
-          ...elements[cartonSide].slice(index + 1)
-        ]
-      ])
+      const updateEl = elements.slice()
+      updateEl[cartonSide][index].props.left -= 1
+      setElements(updateEl)
     }
   }
 

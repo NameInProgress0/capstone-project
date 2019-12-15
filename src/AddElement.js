@@ -21,7 +21,6 @@ export default function({
         handleBlur={handleBlur}
       />
       <ResizeX data-dragevent="resizeX" draggable />
-
       <ResizeY resize="Y" data-dragevent="resizeY" draggable />
       <ResizeXY data-dragevent="resizeXY" draggable />
       <Delete selected={isSelected} onClick={handleDeleteElement}>

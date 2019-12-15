@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from 'react'
+import ReactDOM from 'react-dom'
 import styled from 'styled-components/macro'
 import Carton from './Carton'
 import ToolbarTop from './ToolbarTop'
@@ -16,9 +17,11 @@ export default function App({ width, height, depth }) {
   function useKeyPress() {
     function downHandler({ keyCode }) {
       if (selectElement !== 0) {
-        const index = elements.findIndex(item => item.key === selectElement)
-        if (!elements[index].props.changeText) {
-          const update = elements[index].props
+        const index = elements[cartonSide].findIndex(
+          item => item.key === selectElement
+        )
+        if (!elements[cartonSide][index].props.changeText) {
+          const update = elements[cartonSide][index].props
 
           switch (keyCode) {
             case 37: // Arrow Left
@@ -37,14 +40,13 @@ export default function App({ width, height, depth }) {
               return
           }
 
-          setElements([
-            ...elements.slice(0, index),
-            {
-              ...elements[index],
-              props: { ...update }
-            },
-            ...elements.slice(index + 1)
-          ])
+          const updateElements = elements.slice()
+          updateElements[cartonSide][index].props = {
+            ...updateElements[cartonSide][index].props,
+            update
+          }
+
+          setElements(updateElements)
         }
       }
     }
@@ -79,7 +81,81 @@ export default function App({ width, height, depth }) {
 
     turn = turn < 0 ? 3 : turn
     turn = turn > 3 ? 0 : turn
-    setCartonSide(turn)
+
+    const carton = document.querySelector('[data-el=Carton]')
+
+    carton.style.overflow = 'unset'
+    carton.style.transformStyle = 'preserve-3d'
+
+    const sideToRotateDimensions = {}
+
+    sideToRotateDimensions.height = cartonDimensions.height
+    sideToRotateDimensions.width = cartonDimensions.depth
+    sideToRotateDimensions.depth = cartonDimensions.width
+    sideToRotateDimensions.scale = cartonDimensions.scale
+
+    const sideToRotate = document.createElement('div')
+
+    const halfWidth =
+      (sideToRotateDimensions.width * sideToRotateDimensions.scale) / 2
+
+    let translateX = ''
+
+    if (turnSide === 'left') translateX = '-' + halfWidth
+    else
+      translateX =
+        turn % 2
+          ? sideToRotateDimensions.width * scale * 2 + halfWidth
+          : '-' + (sideToRotateDimensions.depth * scale) / 2
+
+    sideToRotate.style.transform = `translateZ(-${halfWidth}px) translateX(${translateX}px)  rotateY(90deg)  `
+    sideToRotate.style.height =
+      sideToRotateDimensions.height * sideToRotateDimensions.scale + 'px'
+    sideToRotate.style.width =
+      sideToRotateDimensions.width * sideToRotateDimensions.scale + 'px'
+
+    sideToRotate.style.top = '-1px'
+    sideToRotate.style.position = 'absolute'
+
+    ReactDOM.render(
+      <Carton
+        dimensions={sideToRotateDimensions}
+        setSelectElement={setSelectElement}
+        selectElement={selectElement}
+        elements={elements}
+        addElement={addElement}
+        setElements={setElements}
+        cartonSide={turn}
+        reflect={turnSide === 'left'}
+      />,
+      sideToRotate
+    )
+
+    carton.appendChild(sideToRotate)
+
+    let deg = 0
+    let translateZ = 0
+    const translateStep = halfWidth / 90
+
+    const normalize = () => {
+      carton.style.transform = 'translateZ(0px) translateX(0px) rotateY(0deg)  '
+      carton.style.overflow = 'hidden'
+      sideToRotate.remove()
+      setCartonSide(turn)
+    }
+
+    const rotate = () => {
+      carton.style.transform =
+        'rotateY(' + deg + 'deg) translateZ(' + translateZ + 'px)'
+
+      translateZ += translateStep
+
+      turnSide === 'left' ? deg++ : deg--
+      ;(deg > 90 && turnSide === 'left') || (deg < -90 && turnSide === 'right')
+        ? normalize()
+        : setTimeout(rotate, 100)
+    }
+    rotate()
   }
 
   const cartonDimensions = {
@@ -91,18 +167,20 @@ export default function App({ width, height, depth }) {
   const scale = getScale(cartonDimensions)
   cartonDimensions.scale = scale
 
-  if (cartonSide % 2) {
-    cartonDimensions.width = cartonDimensions.depth
-  }
-
   const [elementDimensions, setElementDimensions] = useState({
     height: cartonDimensions.height * cartonDimensions.scale,
     width: cartonDimensions.width * cartonDimensions.scale
   })
 
+  if (cartonSide % 2) {
+    const originalWidth = cartonDimensions.width
+    cartonDimensions.width = cartonDimensions.depth
+    cartonDimensions.depth = originalWidth
+  }
+
   useEffect(() => {
     if (selectElement !== 0) {
-      const { height, width } = elements.filter(
+      const { height, width } = elements[cartonSide].filter(
         item => item.key === selectElement
       )[0].props
       setElementDimensions({ height, width })
@@ -111,15 +189,18 @@ export default function App({ width, height, depth }) {
         width = cartonDimensions.width * cartonDimensions.scale
       setElementDimensions({ height, width })
     }
-  }, [selectElement, elements])
+  }, [selectElement, elements, cartonSide])
 
   function addElement(props) {
-    setElements([...elements, [...elements[cartonSide], props]])
+    const update = elements.slice()
+    update[cartonSide] = [...elements[cartonSide], props]
+    setElements(update)
   }
 
   return (
     <Wrapper>
       <ToolbarTop
+        cartonSide={cartonSide}
         selectElement={selectElement}
         elements={elements}
         setElements={setElements}
@@ -134,7 +215,6 @@ export default function App({ width, height, depth }) {
         selectElement={selectElement}
         elements={elements}
         setElements={setElements}
-        side="left"
       >
         <CartonDimension side="left">
           {((elementDimensions.height / scale) * pxCalc.pxTocm).toFixed(2)} cm
@@ -155,12 +235,15 @@ export default function App({ width, height, depth }) {
         selectElement={selectElement}
         elements={elements}
         setElements={setElements}
+        handleCartonSide={handleCartonSide}
+        cartonSide={cartonSide}
       />
       <ToolbarBottom
         selectElement={selectElement}
         addElement={addElement}
         elements={elements}
         setElements={setElements}
+        cartonSide={cartonSide}
       />
     </Wrapper>
   )

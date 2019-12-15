@@ -9,7 +9,8 @@ export default function({
   elements,
   addElement,
   setElements,
-  cartonSide
+  cartonSide,
+  reflect = false
 }) {
   let dragEvent = false
   let startPosition = {}
@@ -45,17 +46,16 @@ export default function({
         item => item.key === dragEvent.id
       )
 
-      setElements([
-        ...elements,
-        [
-          ...elements[cartonSide].slice(0, index),
-          {
-            ...elements[cartonSide][index],
-            props: { ...elements[cartonSide][index].props, ...dragEvent.update }
-          },
-          ...elements[cartonSide].slice(index + 1)
-        ]
-      ])
+      const updateElements = elements.slice()
+      updateElements[cartonSide][index] = {
+        ...updateElements[cartonSide][index],
+        props: {
+          ...updateElements[cartonSide][index].props,
+          ...dragEvent.update
+        }
+      }
+
+      setElements(updateElements)
     }
 
     dragEvent = false
@@ -63,7 +63,6 @@ export default function({
 
   function handleSelectElement(event, key) {
     event.stopPropagation()
-
     if (key === selectElement && selectElement !== 0) {
       const index = elements[cartonSide].findIndex(
         item => item.key === selectElement
@@ -86,26 +85,25 @@ export default function({
         const index = elements[cartonSide].findIndex(
           item => item.key === selectElement
         )
-        setElements([
-          ...elements,
-          [
-            ...elements.slice(0, index),
-            { ...elements[index], selected: false },
-            ...elements.slice(index + 1)
-          ]
-        ])
+        const updateElements = elements.slice()
+        updateElements[cartonSide][index] = {
+          ...updateElements[cartonSide][index],
+          selected: false
+        }
+
+        setElements(updateElements)
       }
 
       if (key !== 0) {
         const index = elements[cartonSide].findIndex(item => item.key === key)
-        setElements([
-          ...elements,
-          [
-            ...elements.slice(0, index),
-            { ...elements[index], selected: true },
-            ...elements.slice(index + 1)
-          ]
-        ])
+
+        const updateElements = elements.slice()
+        updateElements[cartonSide][index] = {
+          ...updateElements[cartonSide][index],
+          selected: true
+        }
+
+        setElements(updateElements)
       }
     }
 
@@ -113,14 +111,15 @@ export default function({
   }
 
   function handleDeleteElement(key) {
+    setSelectElement(0)
     const index = elements[cartonSide].findIndex(item => item.key === key)
-    setElements([
-      ...elements,
-      [
-        ...elements[cartonSide].slice(0, index),
-        ...elements[cartonSide].slice(index + 1)
-      ]
-    ])
+    const newElements = elements.slice()
+
+    newElements[cartonSide] = [
+      ...newElements[cartonSide].slice(0, index),
+      ...newElements[cartonSide].slice(index + 1)
+    ]
+    setElements(newElements)
   }
 
   function handleDrop(event) {
@@ -148,7 +147,7 @@ export default function({
     )
     setElements([
       ...elements,
-      [
+      (elements[cartonSide] = [
         ...elements[cartonSide].slice(0, index),
         {
           ...elements[cartonSide][index],
@@ -160,14 +159,16 @@ export default function({
           }
         },
         ...elements[cartonSide].slice(index + 1)
-      ]
+      ])
     ])
   }
+
   return (
     <Carton
       data-el="Carton"
       height={height}
       width={width}
+      reflect={reflect}
       onClick={event => handleSelectElement(event, 0)}
       onDragStart={onDragStart}
       onDragOver={handleDragOver}
@@ -187,7 +188,10 @@ export default function({
           }}
           setSelectElement={event => handleSelectElement(event, item.key)}
           isSelected={item.selected}
-          handleDeleteElement={() => handleDeleteElement(item.key)}
+          handleDeleteElement={event => {
+            event.stopPropagation()
+            handleDeleteElement(item.key)
+          }}
           handleBlur={handleBlur}
         />
       ))}
@@ -198,12 +202,11 @@ export default function({
 const Carton = styled.section`
   height: ${props => props.height}px;
   width: ${props => props.width}px;
-  max-height: 80%;
-  max-width: 80%;
-  position: relative;
+  position: absolute;
   background-color: saddlebrown;
   overflow: hidden;
   border: 1px solid black;
+  transform: ${props => (props.reflect ? 'rotateY(180deg)' : '')};
 `
 
 function handleDragFunctions(event, startPosition, dragEvent) {
@@ -245,7 +248,7 @@ function handleDragFunctions(event, startPosition, dragEvent) {
       dragEvent.el.style.width = 'auto'
       dragEvent.el.style.height = 'auto'
 
-      update.fontSize = height * 0.63
+      update.fontSize = Math.floor(height * 0.63)
     }
   }
   if (dragEvent.function === 'rotate') {
